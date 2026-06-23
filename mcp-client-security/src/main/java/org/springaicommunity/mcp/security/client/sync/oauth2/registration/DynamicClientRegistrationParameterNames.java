@@ -41,6 +41,8 @@ public class DynamicClientRegistrationParameterNames {
 
 	public static final String CLIENT_SECRET_EXPIRES_AT = "client_secret_expires_at";
 
+	public static final String APPLICATION_TYPE = "application_type";
+
 	private DynamicClientRegistrationParameterNames() {
 
 	}

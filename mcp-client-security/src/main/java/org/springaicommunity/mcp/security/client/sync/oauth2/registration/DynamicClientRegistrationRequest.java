@@ -50,10 +50,12 @@ public class DynamicClientRegistrationRequest {
 
 	public @Nullable final String scope;
 
+	public @Nullable final OidcApplicationType applicationType;
+
 	private DynamicClientRegistrationRequest(List<AuthorizationGrantType> grantTypes,
 			@Nullable List<String> redirectUris, @Nullable ClientAuthenticationMethod tokenEndpointAuthMethod,
 			@Nullable List<OAuth2AuthorizationResponseType> responseTypes, @Nullable String clientName,
-			@Nullable String clientUri, @Nullable String scope) {
+			@Nullable String clientUri, @Nullable String scope, @Nullable OidcApplicationType applicationType) {
 		this.grantTypes = grantTypes.stream().map(AuthorizationGrantType::getValue).toList();
 		this.redirectUris = redirectUris != null ? Collections.unmodifiableList(redirectUris) : null;
 		this.responseTypes = responseTypes != null
@@ -62,6 +64,7 @@ public class DynamicClientRegistrationRequest {
 		this.clientName = clientName;
 		this.clientUri = clientUri;
 		this.scope = scope;
+		this.applicationType = applicationType;
 	}
 
 	public List<String> getGrantTypes() {
@@ -90,6 +93,10 @@ public class DynamicClientRegistrationRequest {
 
 	public @Nullable String getScope() {
 		return this.scope;
+	}
+
+	public @Nullable OidcApplicationType getApplicationType() {
+		return this.applicationType;
 	}
 
 	public static Builder builder() {
@@ -135,7 +142,14 @@ public class DynamicClientRegistrationRequest {
 
 		public @Nullable String scope;
 
+		private OidcApplicationType applicationType = OidcApplicationType.WEB;
+
 		private Builder() {
+		}
+
+		public Builder applicationType(OidcApplicationType applicationType) {
+			this.applicationType = applicationType;
+			return this;
 		}
 
 		public Builder redirectUris(List<String> redirectUris) {
@@ -196,7 +210,8 @@ public class DynamicClientRegistrationRequest {
 						"grant types must contain authorization_code when refresh_token is present");
 			}
 			return new DynamicClientRegistrationRequest(this.grantTypes, this.redirectUris,
-					this.tokenEndpointAuthMethod, this.responseTypes, this.clientName, this.clientUri, this.scope);
+					this.tokenEndpointAuthMethod, this.responseTypes, this.clientName, this.clientUri, this.scope,
+					this.applicationType);
 		}
 
 	}

@@ -144,6 +144,9 @@ public class DynamicClientRegistrationService {
 		if (request.getScope() != null) {
 			parameters.put(OAuth2ParameterNames.SCOPE, request.getScope());
 		}
+		if (request.getApplicationType() != null) {
+			parameters.put(DynamicClientRegistrationParameterNames.APPLICATION_TYPE, request.getApplicationType());
+		}
 		return parameters;
 	}
 
