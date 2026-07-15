@@ -355,6 +355,8 @@ class McpServerConfiguration {
 ```
 
 Then you should be able to call your MCP server with a header `X-API-key: api01.mycustomapikey`.
+Requests without an API key receive an HTTP 401 response when no other configured authentication mechanism
+authenticates the request. Requests containing an invalid API key also receive an HTTP 401 response.
 
 ### Known limitations
 

@@ -23,12 +23,14 @@ import org.springaicommunity.mcp.security.server.apikey.authentication.ApiKeyAut
 import org.springaicommunity.mcp.security.server.apikey.web.ApiKeyAuthenticationConverter;
 import org.springaicommunity.mcp.security.server.apikey.web.ApiKeyAuthenticationFilter;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.web.authentication.AuthenticationConverter;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -46,12 +48,18 @@ public class McpApiKeyConfigurer extends AbstractHttpConfigurer<McpApiKeyConfigu
 
 	private @Nullable AuthenticationConverter authenticationConverter;
 
+	private boolean unauthorizedOnMissingApiKey = true;
+
 	public @Nullable SessionBindingConfigurer sessionBindingConfigurer;
 
 	@Override
 	public void init(HttpSecurity http) {
 		Assert.notNull(this.apiKeyEntityRepository, "apiKeyRepository cannot be null");
 		http.authenticationProvider(postProcess(new ApiKeyAuthenticationProvider<>(this.apiKeyEntityRepository)));
+		if (this.unauthorizedOnMissingApiKey && http.getConfigurer(McpServerOAuth2Configurer.class) == null) {
+			http.exceptionHandling((exceptions) -> exceptions
+				.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)));
+		}
 		registerCsrfOverride(http);
 		if (this.sessionBindingConfigurer != null) {
 			this.sessionBindingConfigurer.init(http);
@@ -119,6 +127,18 @@ public class McpApiKeyConfigurer extends AbstractHttpConfigurer<McpApiKeyConfigu
 	 */
 	public McpApiKeyConfigurer authenticationConverter(AuthenticationConverter authenticationConverter) {
 		this.authenticationConverter = authenticationConverter;
+		return this;
+	}
+
+	/**
+	 * Configure whether requests without an API key should receive an HTTP 401 response
+	 * when no other authentication mechanism authenticates the request. Defaults to
+	 * {@code true}.
+	 * @param unauthorizedOnMissingApiKey whether to configure the HTTP 401 entry point
+	 * @return The {@link McpApiKeyConfigurer} for further configuration
+	 */
+	public McpApiKeyConfigurer unauthorizedOnMissingApiKey(boolean unauthorizedOnMissingApiKey) {
+		this.unauthorizedOnMissingApiKey = unauthorizedOnMissingApiKey;
 		return this;
 	}
 
