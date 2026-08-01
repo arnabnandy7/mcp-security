@@ -38,6 +38,8 @@ import org.springframework.security.config.annotation.web.configurers.oauth2.ser
 import org.springframework.security.config.annotation.web.configurers.oauth2.server.authorization.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.oauth2.core.OAuth2Token;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
+import org.springframework.security.oauth2.server.authorization.authentication.OAuth2AuthorizationCodeRequestAuthenticationContext;
+import org.springframework.security.oauth2.server.authorization.authentication.OAuth2AuthorizationCodeRequestAuthenticationValidator;
 import org.springframework.security.oauth2.server.authorization.authentication.OAuth2ClientRegistrationAuthenticationContext;
 import org.springframework.security.oauth2.server.authorization.authentication.OAuth2ClientRegistrationAuthenticationValidator;
 import org.springframework.security.oauth2.server.authorization.mcp.token.ResourceIdentifierAudienceTokenCustomizer;
@@ -69,6 +71,8 @@ public class McpAuthorizationServerConfigurer
 	private boolean supportClientIdMetadataDocument = false;
 
 	private Consumer<OAuth2ClientRegistrationAuthenticationContext> clientRegistrationValidator = new OAuth2ClientRegistrationAuthenticationValidator();
+
+	private Consumer<OAuth2AuthorizationCodeRequestAuthenticationContext> authorizationCodeRequestValidator = new OAuth2AuthorizationCodeRequestAuthenticationValidator();
 
 	public static McpAuthorizationServerConfigurer mcpAuthorizationServer() {
 		return new McpAuthorizationServerConfigurer();
@@ -122,6 +126,19 @@ public class McpAuthorizationServerConfigurer
 		return this;
 	}
 
+	/**
+	 * Update the validator for incoming authorization code requests.
+	 * @param authorizationCodeRequestValidator the validator. Defaults to
+	 * {@link OAuth2AuthorizationCodeRequestAuthenticationValidator};
+	 * @return The {@link McpAuthorizationServerConfigurer} for further configuration.
+	 */
+	public McpAuthorizationServerConfigurer authorizationCodeRequestValidator(
+			Consumer<OAuth2AuthorizationCodeRequestAuthenticationContext> authorizationCodeRequestValidator) {
+		Assert.notNull(authorizationCodeRequestValidator, "authorizationCodeRequestValidator cannot be null");
+		this.authorizationCodeRequestValidator = authorizationCodeRequestValidator;
+		return this;
+	}
+
 	@Override
 	public void init(HttpSecurity http) {
 		http.authorizeHttpRequests(authz -> {
@@ -130,6 +147,8 @@ public class McpAuthorizationServerConfigurer
 			}
 		}).oauth2AuthorizationServer(authServer -> {
 			authServer.addObjectPostProcessor(McpNoScopeClientConsentNotRequired.postProcessor());
+			authServer.addObjectPostProcessor(
+					new McpAuthorizationCodeRequestValidatorPostProcessor(this.authorizationCodeRequestValidator));
 			authServer.addObjectPostProcessor(
 					new McpClientRegistrationValidatorPostProcessor(this.clientRegistrationValidator));
 			authServer.authorizationServerMetadataEndpoint(metadataEndpoint -> {

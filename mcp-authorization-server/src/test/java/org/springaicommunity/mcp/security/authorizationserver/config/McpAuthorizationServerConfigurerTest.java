@@ -60,6 +60,7 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springaicommunity.mcp.security.authorizationserver.config.McpAuthorizationServerConfigurer.mcpAuthorizationServer;
+import static org.springframework.security.oauth2.server.authorization.authentication.OAuth2AuthorizationCodeRequestAuthenticationValidator.DEFAULT_SCOPE_VALIDATOR;
 import static org.springframework.security.oauth2.server.authorization.authentication.OAuth2ClientRegistrationAuthenticationValidator.DEFAULT_REDIRECT_URI_VALIDATOR;
 
 @ExtendWith(SpringExtension.class)
@@ -224,6 +225,8 @@ class McpAuthorizationServerConfigurerTest {
 					mcpAuthzServer.authorizationServer(authzServer -> authzServerCustomizationCount.incrementAndGet());
 					mcpAuthzServer.cimd(true);
 					mcpAuthzServer.dynamicClientRegistrationValidator(clientRegistrationValidator);
+					mcpAuthzServer.authorizationCodeRequestValidator(
+							new LocalhostWildcardPortValidator().andThen(DEFAULT_SCOPE_VALIDATOR));
 				});
 			return http.build();
 		}
