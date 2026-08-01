@@ -1129,6 +1129,28 @@ ClientIdMetadataDocumentRegisteredClientRepository cimdClientRepository() {
 }
 ```
 
+The authorization server validates the redirect URI in an authorization request against
+the redirect URIs from the client metadata document. Some clients, such as Claude Code, use a dynamic port with
+the `localhost` host. To support those clients, configure `LocalhostWildcardPortValidator`
+alongside Spring Authorization Server's default scope validator:
+
+```java
+@Bean
+SecurityFilterChain securityFilterChain(
+        HttpSecurity http) {
+    return http
+            .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
+            .with(McpAuthorizationServerConfigurer.mcpAuthorizationServer(), mcp -> {
+                mcp.cimd(true);
+                mcp.authorizationCodeRequestValidator(
+                        new LocalhostWildcardPortValidator()
+                                .andThen(DEFAULT_SCOPE_VALIDATOR));
+            })
+            .formLogin(withDefaults())
+            .build();
+}
+```
+
 ### Known limitations
 
 - Spring WebFlux servers are not supported.
