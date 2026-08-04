@@ -18,6 +18,7 @@ package org.springaicommunity.mcp.security.server.boot;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.security.autoconfigure.web.servlet.ConditionalOnDefaultWebSecurity;
 import org.springframework.boot.security.oauth2.server.resource.autoconfigure.OAuth2ResourceServerAutoConfiguration;
@@ -37,6 +38,7 @@ import static org.springaicommunity.mcp.security.server.config.McpServerOAuth2Co
  * @author Daniel Garnier-Moiroux
  */
 @AutoConfiguration(before = OAuth2ResourceServerAutoConfiguration.class)
+@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 @ConditionalOnDefaultWebSecurity
 @EnableConfigurationProperties(OAuth2ResourceServerProperties.class)
 @ConditionalOnProperty(prefix = "spring.security.oauth2.resourceserver", name = "jwt.issuer-uri",
